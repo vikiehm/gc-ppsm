@@ -5,16 +5,11 @@ matlab/data/debugShapes/*
 matlab/data
 logs/
 *.mat
-matlab/src/solveShapeMatch/outputOld/
 matlab/vis/*.png
 matlab/*.png
 matlab/result_png/*.png
 .vscode/
-matlab/src/solveShapeMatch/output3dv/
-matlab/src/shot_features/
-matlab/src/solveShapeMatch/output_siggraph_features/
 *.png
 matlab/src/solveShapeMatch/out*
 build/
-matlab/src/solveShapeMatch/fast_dog_save/
 matlab/src/solveShapeMatch/*_xyz/
