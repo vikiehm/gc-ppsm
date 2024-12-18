@@ -30,6 +30,8 @@ pip install -r processing/requirements.txt
 - Run `matlab/call_main.m` to solve the partial-to-partial shape matching problem on low resolution
 - Run `processsing/gen_high_res_mat.py` to generate the high resolution solution based on the given low resolution solution
 
+## CUTS24 Dataset
+You can find the indices for the CUTS24 dataset [here](https://github.com/vikiehm/geometrically-consistent-partial-partial-shape-matching).
 
 ## References 
 [1] Windheuser, T., Schlickwei, U., Schimdt, F. R., & Cremers, D. (2011, August). Large‐scale integer linear programming for orientation preserving 3d shape matching. In Computer Graphics Forum (Vol. 30, No. 5, pp. 1471-1480). Oxford, UK: Blackwell Publishing Ltd.
