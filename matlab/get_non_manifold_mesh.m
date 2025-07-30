@@ -1,7 +1,6 @@
 function [VX, FX, VY, FY, FX_low, FY_low, idx_VX, idx_VY, idx_FX, idx_FY, added_verts, VX_all, VY_all, FeatX, FeatY] = get_non_manifold_mesh(shape_1, shape_2, num_faces, data_folder)
-    extra_info_folder = "";
-    extra_info = load(strcat(data_folder, "/", extra_info_folder, "/", string(num_faces), "_faces/", shape_2, "_extra_info.mat"));
-    extra_info_X = load(strcat(data_folder, "/", extra_info_folder, "/", string(num_faces), "_faces/", shape_1, "_extra_info.mat"));
+    extra_info = load(strcat(data_folder, "/", shape_2, "_extra_info.mat"));
+    extra_info_X = load(strcat(data_folder, "/", shape_1, "_extra_info.mat"));
 
     FY_low = double(extra_info.F_low);
     FY = double(extra_info.F);
@@ -16,6 +15,6 @@ function [VX, FX, VY, FY, FX_low, FY_low, idx_VX, idx_VY, idx_FX, idx_FY, added_
     FX = double(extra_info_X.F);
     idx_FX = double(extra_info_X.idx_F);
     idx_VX = double(extra_info_X.idx_V);
-    FeatX = extra_info_X.Feat_low;
-    FeatY = extra_info.Feat_low;
+    FeatX = extra_info_X.features;
+    FeatY = extra_info.features;
 end

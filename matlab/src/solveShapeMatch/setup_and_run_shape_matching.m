@@ -16,7 +16,7 @@ function [G, times, solution, combAll, usedComb, vis] = setup_and_run_shape_matc
     values = [lambda_mem, degenerate, relaxed, partial_to_partial, curr_nr];
 
     disp("Using Gurobi as Solver")
-    options = sdpsettings('solver', 'gurobi', 'verbose', 1, 'debug', 1);
+    options = sdpsettings('solver', 'gurobi', 'verbose', 1, 'debug', 1, 'gurobi.TimeLimit', 60);
 
     filepath = fileparts(which('shapeMatchSolver.m'));
 

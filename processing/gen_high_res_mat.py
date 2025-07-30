@@ -7,6 +7,54 @@ import open3d as o3d
 import scipy.io as sio
 import torch
 
+def vis_p2p(verts_source, verts_target, faces_source, faces_target, corres, corres_source):
+    """
+    Visualize point-to-point correspondences between two meshes.
+    
+    Args:
+        verts_source (np.ndarray): Vertices of the source mesh
+        verts_target (np.ndarray): Vertices of the target mesh
+        faces_source (np.ndarray): Faces of the source mesh
+        faces_target (np.ndarray): Faces of the target mesh
+        corres (np.ndarray): Correspondence indices between source and target vertices
+    """
+    import polyscope as ps
+
+    y_shift = np.array([0.7, 0, 0])
+
+        # rotate both shapes by -90 degrees around the z-axis
+    rotation_matrix = np.array([[0, 1, 0],
+                                [-1, 0, 0],
+                                [0, 0, 1]])
+
+    verts_source = verts_source @ rotation_matrix.T
+    verts_target = verts_target @ rotation_matrix.T
+
+
+    # and then rotate shape Y by -90 degrees around the x-axis
+    rotation_matrix_y = np.array([[1, 0, 0],
+                                   [0, 0, 1],
+                                   [0, 1, 0]])
+    verts_target = verts_target @ rotation_matrix_y.T
+    verts_source = verts_source @ rotation_matrix_y.T
+
+    ps.init()
+    
+    poly_shape_source = ps.register_surface_mesh("source", verts_source, faces_source)
+    poly_shape_target = ps.register_surface_mesh("target", verts_target + y_shift, faces_target)
+
+    color_source = verts_source
+    color_source = color_source - np.min(color_source)
+    color_source = color_source / np.max(color_source)
+    color_source[corres_source==-1] = np.ones(3) * 0.7
+    color_target = color_source[corres]
+    color_target[corres==-1] = np.ones(3) * 0.7
+    poly_shape_source.add_color_quantity("correspondences", color_source, defined_on='vertices', enabled=True)
+    poly_shape_target.add_color_quantity("correspondences", color_target, defined_on='vertices', enabled=True)
+
+    #ps.screenshot(f"correspondences.png")
+    ps.show()
+
 def all_nn_query(feat_x, feat_y, dim=-2):
     """
     Find correspondences via nearest neighbor query
@@ -126,6 +174,7 @@ if __name__ == "__main__":
     use_mean = True
     save_mode = True
     calc_corres = True
+    vis = False
     final_folder = "./high_res_corres/"
     # check if folder exists
     if not os.path.exists(final_folder):
@@ -134,20 +183,23 @@ if __name__ == "__main__":
     # geodesic distance folder
     dist_folder = "./dists/"
 
-    basename_shape_1 = "cat0"
-    basename_shape_2 = "cat1"
+    category = "cat"
+    nr_1 = "7"
+    nr_2 = "6"
+    basename_shape_1 = f"{category}-{nr_1}"
+    basename_shape_2 = f"{category}-{nr_2}"
     shape_1 = f"{basename_shape_1}.off"
     shape_2 = f"{basename_shape_2}.off"
 
     # TODO: ADD path to high resolution features
-    featInfoX = sio.loadmat("TODO")
-    featInfoY = sio.loadmat("TODO")
+    featInfoX = sio.loadmat(f"./features/cuts_{category}_shape_{nr_1}.mat")
+    featInfoY = sio.loadmat(f"./features/cuts_{category}_shape_{nr_2}.mat")
     featX = torch.from_numpy(featInfoX["featY"])
     featY = torch.from_numpy(featInfoY["featY"])
     used_folder = f"./matlab/src/solveShapeMatch/output/{basename_shape_1}_{basename_shape_2}/"
 
-    file_1 = f"./extra_infos/100_faces/{basename_shape_1}_extra_info.mat"
-    file_2 = f"./extra_infos/100_faces/{basename_shape_2}_extra_info.mat"
+    file_1 = f"./low_res_meshes/{basename_shape_1}_extra_info.mat"
+    file_2 = f"./low_res_meshes/{basename_shape_2}_extra_info.mat"
     # load mat file
     extraInfoX = sio.loadmat(file_1)
     extraInfoY = sio.loadmat(file_2)
@@ -167,10 +219,10 @@ if __name__ == "__main__":
 
     try:
         min_nr = get_best_matching(
-            shape_1, shape_2, used_folder, use_mean
+            basename_shape_1, basename_shape_2, used_folder, use_mean
         )
         vis_files = glob.glob(
-            f"{used_folder}*{shape_1}_{shape_2}_*_faces_curr_nr_{min_nr}_lp_0_Vis_py.mat"
+            f"{used_folder}*{basename_shape_1}_{basename_shape_2}_*_faces_curr_nr_{min_nr}_lp_0_Vis_py.mat"
         )
     except Exception as e:
         print("No best matching found")
@@ -194,8 +246,8 @@ if __name__ == "__main__":
         usedComb, VX.shape[0], VY.shape[0]
     )
 
-    VX_high_path = f"./test_shapes/{shape_1}.off"
-    VY_high_path = f"./test_shapes/{shape_2}.off"
+    VX_high_path = f"./data/{basename_shape_1}.off"
+    VY_high_path = f"./data/{basename_shape_2}.off"
 
     mesh_X_high = o3d.io.read_triangle_mesh(VX_high_path)
     mesh_Y_high = o3d.io.read_triangle_mesh(VY_high_path)
@@ -208,19 +260,9 @@ if __name__ == "__main__":
 
     nneigh, nneigh_values = all_nn_query(featX, featY)
     nneighAlt, nneighAlt_values = all_nn_query(featY, featX)
-    dist = torch.cdist(featX, featY)
-    distX = torch.cdist(featY, featX)
     # load dist files for shape 1 and shape 2
-    dist_X = sio.loadmat(f"{dist_folder}/{shape_1}.mat")["dist"]
-    dist_Y = sio.loadmat(f"{dist_folder}/{shape_2}.mat")["dist"]
-
-    dist_X = torch.tensor(dist_X)
-    dist_Y = torch.tensor(dist_Y)
-    idx_VX = torch.tensor(idx_VX)
-    idx_VY = torch.tensor(idx_VY)
-
-    dist_X = torch.squeeze(dist_X[:, idx_VX], 1)
-    dist_Y = torch.squeeze(dist_Y[:, idx_VY], 1)
+    dist_X = torch.cdist(torch.tensor(extraInfoX["V"]), torch.tensor(VX))
+    dist_Y = torch.cdist(torch.tensor(extraInfoY["V"]), torch.tensor(VY))
 
     highToLowX = dist_X.argmin(dim=-1)
     highToLowY = dist_Y.argmin(dim=-1)
@@ -273,11 +315,20 @@ if __name__ == "__main__":
     ours_geo_error_alt = nneighAlt.flatten()
     ours_geo_error_alt[used_indices_Y == 0] = -1
     ours_geo_error[used_indices_X == 0] = -1
+    if vis:
+        vis_p2p(
+            verts_source=VX_high.numpy(),
+            verts_target=VY_high.numpy(),
+            faces_source=FX_high.numpy(),
+            faces_target=FY_high.numpy(),
+            corres=nneighAlt.numpy(),
+            corres_source=nneigh.numpy(),
+        )
 
     if save_mode:
         # save to matlab file
         sio.savemat(
-            f"{final_folder}/{shape_1}-{shape_2}_Vis_partial.mat",
+            f"{final_folder}/{basename_shape_1}-{basename_shape_2}_Vis_partial.mat",
             {
                 "VX": VX_high.numpy(),
                 "VY": VY_high.numpy(),

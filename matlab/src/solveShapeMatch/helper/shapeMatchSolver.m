@@ -39,7 +39,6 @@ function [G, times, solution, combAll] = shapeMatchSolver(shape1, shape2, closed
     FY = cell2mat(shape2('F'));
     corr_infos = varargin{end};
 
-
     shapeXName = shape1('name');
     shapeYName = shape2('name');
 
@@ -99,7 +98,6 @@ function [G, times, solution, combAll] = shapeMatchSolver(shape1, shape2, closed
     [FaComboDegA, FbComboDegA] = getDegenerateCombinations(FX, FY, closed);
     [FbComboDegB, FaComboDegB] = getDegenerateCombinations(FY, FX, closed);
 
-
     combAll = [FaComboNDeg, FbComboNDeg; FaComboDegA, FbComboDegA; FaComboDegB, FbComboDegB];
 
     if size(corr_infos, 1) > 0
@@ -137,14 +135,6 @@ function [G, times, solution, combAll] = shapeMatchSolver(shape1, shape2, closed
         assert(size(combAll, 1) == size(FbComboNDeg, 1) + size(FbComboDegA, 1) + size(FbComboDegB, 1));
     end
     sizeGamma = size(combAll, 1);
-
-    %% Get constraint matrix
-    oldConstraints = false;
-    if oldConstraints
-        disp("Old Constraints are used.")
-    else
-        disp("New Constraints are used.")
-    end
 
     tic
 
@@ -194,7 +184,6 @@ function [G, times, solution, combAll] = shapeMatchSolver(shape1, shape2, closed
     end
 
     [~, ~, ~, bounding_edgesX] = findTriMeshHoles(FX, VX);
-
 
     if partial_to_partial
         for i = 1:size(bounding_edgesX, 1)
@@ -276,7 +265,6 @@ function [G, times, solution, combAll] = shapeMatchSolver(shape1, shape2, closed
     disp("Solution contains >>> " + string(nnz(G)) + " <<< matchings")
     disp("Solution has wks energy of >>> " + string(E' * G) + " <<< matchings")
 
-
     disp("Total time consumption approx: " + string(tOpt + tEnergy + tConstraints))
     disp("      => optimization    : " + string(tOpt) + " s")
     disp("      => energy comp     : " + string(tEnergy) + " s")
@@ -290,12 +278,12 @@ function [G, times, solution, combAll] = shapeMatchSolver(shape1, shape2, closed
     visDict("FX") = FX;
     visDict("FY") = FY;
     visDict("usedComb") = usedComb;
-
     %% Save files
     if exist('filename')
         if ~exist(path, 'dir')
             mkdir(path);
         end
+        strcat(path, filename, '_G.mat')
 
         save(strcat(path, filename, '_G.mat'), 'G');
         % save time for speedtest

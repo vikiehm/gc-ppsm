@@ -5,18 +5,18 @@ function [] = interval_search(curr_animal, shape_1, shape_2, curr_lambda, data_f
     curr_lambda = str2num(curr_lambda);
     disp("Lambda: " + curr_lambda)
     calc_mean = true;
-    max_iter = 300;
+    max_iter = 200;
     max_energy = 200;
     use_lp = 0;
     curr_dataset = "cp2p";
     output_folder = 'output/'
 
-    used_folder = ['./matlab/src/solveShapeMatch/' output_folder '/' shape_1 '_' shape_2 '/'];
+    used_folder = ['./src/solveShapeMatch/' output_folder '/' shape_1 '_' shape_2 '/'];
     used_energies = max_energy * ones(1, max_iter);
     not_solvable_arr = zeros(1, max_iter);
     L = 1;
     start_step_size = 25;
-    min_step = 1;
+    min_step = 3;
     all_steps = [min_step:start_step_size:max_iter - 1, max_iter - 1];
 
     % Set energies in intervals of st

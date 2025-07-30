@@ -2,3 +2,5 @@ numpy
 torch
 scipy
 open3d
+libigl==2.4.1
+polyscope
