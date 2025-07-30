@@ -27,6 +27,7 @@ pip install -r processing/requirements.txt
 - Run the setup_matlab() file (Adjust the path to the repo beforehand)
 
 ## Run the Code 
+- Run `processing/downsample_mesh.py` to downsample the meshes from the data folder to low resolution
 - Run `matlab/call_main.m` to solve the partial-to-partial shape matching problem on low resolution
 - Run `processsing/gen_high_res_mat.py` to generate the high resolution solution based on the given low resolution solution
 
